@@ -8,9 +8,12 @@ dependencies = [
     "black>=25.1.0",
     "fastapi[standard]>=0.116.1",
     "isort>=6.0.1",
+    "langchain-openai>=0.3.28",
     "langgraph>=0.6.2",
+    "langgraph-supervisor>=0.0.29",
     "langsmith>=0.4.8",
     "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
 ]
 
 [tool.black]
