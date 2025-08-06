@@ -67,3 +67,12 @@ class ProxyAgentBuilder:
         compiled_supervisor = self.build().compile()
         logger.info("Supervisor proxy compilado com sucesso")
         return compiled_supervisor
+
+# Função para o LangGraph Dev Server
+def get_proxy_agent():
+    """
+    Função factory para o LangGraph dev server
+    Retorna o agente proxy compilado
+    """
+    builder = ProxyAgentBuilder()
+    return builder.compile()
