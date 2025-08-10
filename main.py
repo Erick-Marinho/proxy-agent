@@ -23,8 +23,8 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Inicializa o proxy agent supervisor
-proxy_supervisor = ProxyAgentBuilder().compile()
+# Remove a inicialização global
+# proxy_supervisor = ProxyAgentBuilder().compile()
 
 class ChatRequest(BaseModel):
     message: str
@@ -48,18 +48,61 @@ async def chat(request: ChatRequest):
     Endpoint para conversar com o proxy agent supervisor
     """
     try:
+        logger.info(f"Pergunta recebida: {request.message}")
+        
+        # Cria supervisor a cada requisição (evita cache)
+        proxy_supervisor = ProxyAgentBuilder().compile()
+        
         # Cria estado inicial
         initial_state = {"messages": [HumanMessage(content=request.message)]}
         
         # Executa o supervisor
         result = await proxy_supervisor.ainvoke(initial_state)
         
+        logger.info(f"Resultado completo: {result}")
+        
         # Extrai resposta
         last_message = result["messages"][-1]
         response_text = last_message.content
         
-        # Determina qual agente foi usado
-        agent_used = "company_agent" if "get_company_info" in str(result.get("tool_calls", [])) else "supervisor"
+        # Verifica tool calls na mensagem
+        tool_calls = getattr(last_message, 'tool_calls', [])
+        logger.info(f"Tool calls detectadas: {tool_calls}")
+        
+        # Determina qual agente foi usado baseado nas tool calls
+        original_message = request.message.lower()
+        price_keywords = ["quanto custa", "preço", "valor", "orçamento", "cotação", "custa", "custo", "valores"]
+        has_price_keyword = any(keyword in original_message for keyword in price_keywords)
+        
+        logger.info(f"Pergunta original: {original_message}")
+        logger.info(f"Contém palavra-chave de preço: {has_price_keyword}")
+        
+        # Lógica melhorada para detecção do agente usado
+        if tool_calls:
+            # Se há tool calls, analisa qual ferramenta foi chamada
+            tool_names = [call.get('name', '') for call in tool_calls]
+            if any('transfer_to_budget_specialist' in str(tool) for tool in tool_names):
+                agent_used = "budget_specialist"
+            elif any('transfer_to_company_specialist' in str(tool) for tool in tool_names):
+                agent_used = "company_specialist"
+            else:
+                agent_used = "supervisor"
+        else:
+            # Se não há tool calls, verifica se deveria haver
+            if has_price_keyword:
+                logger.warning("AVISO: Pergunta sobre preço não gerou tool call para budget_specialist")
+                agent_used = "supervisor_error"  # Indica erro de roteamento
+            else:
+                agent_used = "supervisor"
+        
+        # Verifica se há conteúdo específico na resposta
+        response_content = response_text.lower()
+        if "informações de orçamento" in response_content:
+            agent_used = "budget_specialist"
+        elif "informações da empresa" in response_content:
+            agent_used = "company_specialist"
+        
+        logger.info(f"Requisição processada - Agente usado: {agent_used}")
         
         return ChatResponse(
             response=response_text,
