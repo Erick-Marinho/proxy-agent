@@ -42,6 +42,30 @@ async def root():
         "docs": "http://localhost:8000/docs",        
     }
 
+# Função auxiliar simples para identificar o agente usado
+def _identify_agent_used(messages: list, original_message: str) -> str:
+    # Prioridade 1: ferramenta utilizada
+    if any(getattr(m, "name", "") == "get_budget_info" for m in messages):
+        return "budget_specialist"
+    if any(getattr(m, "name", "") == "get_company_info" for m in messages):
+        return "company_specialist"
+
+    # Prioridade 2: último agente especializado que falou
+    for m in reversed(messages):
+        name = getattr(m, "name", None)
+        if name in ("budget_specialist", "company_specialist"):
+            return name
+
+    # Checagem minimalista de erro para perguntas de preço
+    lower = (original_message or "").lower()
+    price_keywords = [
+        "quanto custa", "preço", "valor", "orçamento", "cotação", "custa", "custo", "valores"
+    ]
+    if any(k in lower for k in price_keywords):
+        return "supervisor_error"
+
+    return "supervisor"
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
@@ -59,48 +83,11 @@ async def chat(request: ChatRequest):
         # Executa o supervisor
         result = await proxy_supervisor.ainvoke(initial_state)
         
-        logger.info(f"Resultado completo: {result}")
-        
-        # Extrai resposta
-        last_message = result["messages"][-1]
+        # Extrai resposta final e agente usado de forma simples
+        messages = result.get("messages", [])
+        last_message = messages[-1]
         response_text = last_message.content
-        
-        # Verifica tool calls na mensagem
-        tool_calls = getattr(last_message, 'tool_calls', [])
-        logger.info(f"Tool calls detectadas: {tool_calls}")
-        
-        # Determina qual agente foi usado baseado nas tool calls
-        original_message = request.message.lower()
-        price_keywords = ["quanto custa", "preço", "valor", "orçamento", "cotação", "custa", "custo", "valores"]
-        has_price_keyword = any(keyword in original_message for keyword in price_keywords)
-        
-        logger.info(f"Pergunta original: {original_message}")
-        logger.info(f"Contém palavra-chave de preço: {has_price_keyword}")
-        
-        # Lógica melhorada para detecção do agente usado
-        if tool_calls:
-            # Se há tool calls, analisa qual ferramenta foi chamada
-            tool_names = [call.get('name', '') for call in tool_calls]
-            if any('transfer_to_budget_specialist' in str(tool) for tool in tool_names):
-                agent_used = "budget_specialist"
-            elif any('transfer_to_company_specialist' in str(tool) for tool in tool_names):
-                agent_used = "company_specialist"
-            else:
-                agent_used = "supervisor"
-        else:
-            # Se não há tool calls, verifica se deveria haver
-            if has_price_keyword:
-                logger.warning("AVISO: Pergunta sobre preço não gerou tool call para budget_specialist")
-                agent_used = "supervisor_error"  # Indica erro de roteamento
-            else:
-                agent_used = "supervisor"
-        
-        # Verifica se há conteúdo específico na resposta
-        response_content = response_text.lower()
-        if "informações de orçamento" in response_content:
-            agent_used = "budget_specialist"
-        elif "informações da empresa" in response_content:
-            agent_used = "company_specialist"
+        agent_used = _identify_agent_used(messages, request.message)
         
         logger.info(f"Requisição processada - Agente usado: {agent_used}")
         
