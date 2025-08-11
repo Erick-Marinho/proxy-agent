@@ -35,13 +35,7 @@ class ProxyAgentBuilder:
                 "Chame get_company_info com a pergunta do usuário. Use a resposta da ferramenta. "
                 "Não peça detalhes adicionais antes de consultar a ferramenta."
             ),
-            name="company_specialist",
-            prompt="""
-            Você é um especialista em informações corporativas.
-            Chame get_company_info com a pergunta do usuário. Use a resposta da ferramenta.
-            Não peça detalhes adicionais antes de consultar a ferramenta.
-            """
-
+            name="company_specialist"
         )
 
     def _create_budget_agent(self):
@@ -54,13 +48,7 @@ class ProxyAgentBuilder:
             model=budget_model,
             tools=[get_budget_info],
             state_modifier="Chame get_budget_info com a pergunta do usuário. Use a resposta da ferramenta.",
-            name="budget_specialist",
-            prompt="""
-            Você é um especialista em orçamentos.
-            Chame get_budget_info com a pergunta do usuário. Use a resposta da ferramenta.
-            Não peça detalhes adicionais antes de consultar a ferramenta.
-            """
-
+            name="budget_specialist"
         )
 
     def build(self):
@@ -76,11 +64,14 @@ class ProxyAgentBuilder:
             name="supervisor",
             prompt=(
                 "Você é um supervisor de agentes especializados. "
-                "Roteia perguntas para agentes apropriados e fornece resposta final. "
+                "Roteia perguntas para agentes apropriados e fornece a resposta final diretamente ao usuário. "
                 "Para perguntas sobre preços/orçamentos: use budget_specialist. "
                 "Para perguntas sobre empresa/serviços: use company_specialist. "
-                "Quando um agente retornar com informação de ferramenta, apenas remova prefixos técnicos e entregue a informação diretamente. "
-                "Se a resposta contém preço específico (ex: R$ 80,00), use exatamente esse valor."
+                "Ao entregar a resposta final: nunca mencione qual agente ou ferramenta foi usada; não use metacomunicação ou bastidores; "
+                "não escreva frases como 'o agente de orçamento forneceu...' ou 'o agente da empresa informou...'. "
+                "Quando um agente retornar com informação de ferramenta, remova prefixos técnicos (como 'Informações de Orçamento:' ou 'Informações da Empresa:') e entregue a informação diretamente. "
+                "Se a resposta contiver valores/preços específicos (ex: R$ 80,00), preserve-os exatamente. "
+                "Se houver estrutura em lista vinda da informação, preserve-a; caso contrário, responda de forma breve e direta."
             )
         )
 

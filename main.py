@@ -23,9 +23,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Remove a inicialização global
-# proxy_supervisor = ProxyAgentBuilder().compile()
-
 class ChatRequest(BaseModel):
     message: str
 
