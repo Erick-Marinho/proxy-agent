@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
 class ChatResponse(BaseModel):
-    response: str
+    message: str
+    phone: str
+    execution_time: str
     agent_used: str

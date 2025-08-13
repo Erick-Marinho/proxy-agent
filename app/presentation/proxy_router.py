@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
+import time
 from app.application.agent.proxy_agent_builder import ProxyAgentBuilder
 from langchain_core.messages import HumanMessage
 import logging
@@ -42,6 +43,9 @@ async def chat(request: ChatRequest):
     """
     Endpoint para conversar com o proxy agent supervisor
     """
+    start_time = time.time()
+    
+    
     try:
         logger.info(f"Pergunta recebida: {request.message}")
         
@@ -61,15 +65,19 @@ async def chat(request: ChatRequest):
         agent_used = _identify_agent_used(messages, request.message)
         
         logger.info(f"Requisição processada - Agente usado: {agent_used}")
+
+        total_time = time.time() - start_time
         
         return ChatResponse(
-            response=response_text,
+            message=response_text,
+            phone=request.phone,
+            execution_time=f"{total_time:.2f}s",
             agent_used=agent_used
         )
         
     except Exception as e:
         logger.error(f"Erro no chat: {e}")
         return ChatResponse(
-            response="Desculpe, ocorreu um erro interno.",
+            message="Desculpe, ocorreu um erro interno.",
             agent_used="error"
         )

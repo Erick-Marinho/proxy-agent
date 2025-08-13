@@ -71,9 +71,10 @@ class ProxyAgentBuilder:
         """
         company_agent = self._create_company_agent()
         budget_agent = self._create_budget_agent()
+        handle_customer_data_agent = self._create_handle_customer_data_agent()
 
         supervisor = create_supervisor(
-            agents=[company_agent, budget_agent],
+            agents=[company_agent, budget_agent, handle_customer_data_agent],
             model=self.model,
             name="supervisor",
             prompt=(
@@ -81,6 +82,7 @@ class ProxyAgentBuilder:
                 "Roteia perguntas para agentes apropriados e fornece a resposta final diretamente ao usuário. "
                 "Para perguntas sobre preços/orçamentos: use budget_specialist. "
                 "Para perguntas sobre empresa/serviços: use company_specialist. "
+                "Para perguntas sobre dados do cliente: use colect_customer_data_specialist. "
                 "Ao entregar a resposta final: nunca mencione qual agente ou ferramenta foi usada; não use metacomunicação ou bastidores; "
                 "não escreva frases como 'o agente de orçamento forneceu...' ou 'o agente da empresa informou...'. "
                 "Quando um agente retornar com informação de ferramenta, remova prefixos técnicos (como 'Informações de Orçamento:' ou 'Informações da Empresa:') e entregue a informação diretamente. "

@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 @tool
 async def handle_customer_data(query: str) -> str:
+    """
+    Consulta coleta dados do cliente como: nome, CPF, Email, Endereço, Cidade, Estado, CEP, complemento ou numero.
+    Use esta ferramenta para coletar dados do cliente.
+    """
     logger.info(f"Consultando agente da empresa: {query}")
     
     async with httpx.AsyncClient() as client:

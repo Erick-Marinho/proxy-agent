@@ -32,8 +32,11 @@ app.include_router(proxy_router, prefix="/proxy", tags=["proxy"])
 async def root():
     return {
         "message": "Proxy Agent Supervisor is running",
+        "endpoints": {
+            "POST /proxy/chat": "Chat com o agente supervisor",
+        },
         "status": "success",
-        "version": "0.1.0",
+        "version": "1.1.0",
         "docs": "http://localhost:8000/docs",        
     }
 
