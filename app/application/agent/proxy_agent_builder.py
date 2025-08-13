@@ -8,6 +8,8 @@ from langgraph.graph.message import add_messages
 import logging
 import os
 
+from app.application.tool.handle_customer_agent_tool import handle_customer_data
+
 logger = logging.getLogger(__name__)
 
 class ProxyAgentState(TypedDict):
@@ -50,6 +52,18 @@ class ProxyAgentBuilder:
             state_modifier="Chame get_budget_info com a pergunta do usuário. Use a resposta da ferramenta.",
             name="budget_specialist"
         )
+    
+    def _create_handle_customer_data_agent(self):
+        return create_react_agent(
+            model=self.model,
+            tools=[handle_customer_data],
+            state_modifier=(
+                "Chame get_customer_data quando o usuário fornecer dados pessoais como:"
+                "- nome, CPF, Email, Endereço, Cidade, Estado, CEP."
+                "Use a resposta da ferramenta para coletar os dados do usuário."
+            ),
+            name="colect_customer_data_specialist"
+        )
 
     def build(self):
         """
@@ -57,9 +71,10 @@ class ProxyAgentBuilder:
         """
         company_agent = self._create_company_agent()
         budget_agent = self._create_budget_agent()
+        handle_customer_data_agent = self._create_handle_customer_data_agent()
 
         supervisor = create_supervisor(
-            agents=[company_agent, budget_agent],
+            agents=[company_agent, budget_agent, handle_customer_data_agent],
             model=self.model,
             name="supervisor",
             prompt=(
@@ -67,6 +82,7 @@ class ProxyAgentBuilder:
                 "Roteia perguntas para agentes apropriados e fornece a resposta final diretamente ao usuário. "
                 "Para perguntas sobre preços/orçamentos: use budget_specialist. "
                 "Para perguntas sobre empresa/serviços: use company_specialist. "
+                "Para perguntas sobre dados do cliente: use colect_customer_data_specialist. "
                 "Ao entregar a resposta final: nunca mencione qual agente ou ferramenta foi usada; não use metacomunicação ou bastidores; "
                 "não escreva frases como 'o agente de orçamento forneceu...' ou 'o agente da empresa informou...'. "
                 "Quando um agente retornar com informação de ferramenta, remova prefixos técnicos (como 'Informações de Orçamento:' ou 'Informações da Empresa:') e entregue a informação diretamente. "

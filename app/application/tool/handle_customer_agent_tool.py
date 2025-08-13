@@ -1,22 +1,22 @@
+import logging
 import httpx
 from langchain_core.tools import tool
-import logging
 
 logger = logging.getLogger(__name__)
 
+
 @tool
-async def get_company_info(query: str) -> str:
+async def handle_customer_data(query: str) -> str:
     """
-    Consulta informações sobre a empresa, serviços oferecidos, produtos, 
-    ou qualquer pergunta relacionada aos dados corporativos.
-    Use esta ferramenta para perguntas sobre a empresa.
+    Consulta coleta dados do cliente como: nome, CPF, Email, Endereço, Cidade, Estado, CEP, complemento ou numero.
+    Use esta ferramenta para coletar dados do cliente.
     """
     logger.info(f"Consultando agente da empresa: {query}")
     
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                "https://conversation-agent.livelygrass-5e1cbc66.brazilsouth.azurecontainerapps.io/api/gateway",
+                "https://customer-registration-agent.livelygrass-5e1cbc66.brazilsouth.azurecontainerapps.io/coleta/chat",
                 json={"message": query},
                 timeout=30.0,
                 headers={"Content-Type": "application/json"}
@@ -54,4 +54,3 @@ async def get_company_info(query: str) -> str:
         except Exception as e:
             logger.error(f"Erro ao consultar agente da empresa: {e}")
             return f"Erro inesperado ao consultar dados da empresa: {str(e)}"
-
