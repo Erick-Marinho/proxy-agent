@@ -8,6 +8,8 @@ from langgraph.graph.message import add_messages
 import logging
 import os
 
+from app.application.tool.handle_customer_agent_tool import handle_customer_data
+
 logger = logging.getLogger(__name__)
 
 class ProxyAgentState(TypedDict):
@@ -49,6 +51,18 @@ class ProxyAgentBuilder:
             tools=[get_budget_info],
             state_modifier="Chame get_budget_info com a pergunta do usuário. Use a resposta da ferramenta.",
             name="budget_specialist"
+        )
+    
+    def _create_handle_customer_data_agent(self):
+        return create_react_agent(
+            model=self.model,
+            tools=[handle_customer_data],
+            state_modifier=(
+                "Chame get_customer_data quando o usuário fornecer dados pessoais como:"
+                "- nome, CPF, Email, Endereço, Cidade, Estado, CEP."
+                "Use a resposta da ferramenta para coletar os dados do usuário."
+            ),
+            name="colect_customer_data_specialist"
         )
 
     def build(self):
