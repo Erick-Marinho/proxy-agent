@@ -12,11 +12,20 @@ async def get_budget_info(query: str) -> str:
     """
     logger.info(f"Consultando agente de orçamentos: {query}")
 
+    enforced_query = (
+        "INSTRUÇÕES: Responda com orçamento EXATO, sem intervalos. "
+        "Se houver quantidade, informe preço unitário e TOTAL. "
+        "Preserve números e formato (R$ 0,00). Não use prefixos técnicos. "
+        "RETORNE apenas o conteúdo final ao cliente.\n\n"
+        f"CONSULTA: {query}"
+    )
+
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
                 "https://budget-agent.livelygrass-5e1cbc66.brazilsouth.azurecontainerapps.io/chat",
-                json={"message": query},
+                json={"message": enforced_query},
                 timeout=30.0,
                 headers={"Content-Type": "application/json"},
             )
@@ -36,7 +45,7 @@ async def get_budget_info(query: str) -> str:
                     budget_response = str(result)
 
                 logger.info("Resposta recebida do agente de orçamentos")
-                return f"Informações de Orçamento: {budget_response}"
+                return budget_response
             else:
                 logger.error(f"Erro HTTP {response.status_code}: {response.text}")
                 return f"Erro ao consultar dados de orçamento. Status: {response.status_code}"

@@ -1,14 +1,41 @@
+# services:
+#   # ==== Serviço da API ====
+#   app:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: proxy-agent
+#     restart: unless-stopped
+#     command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+#     volumes:
+#       - .:/app
+#       - /app/.venv
+#     ports:
+#       - "8000:8000"
+
 services:
-  # ==== Serviço da API ====
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: proxy-agent
     restart: unless-stopped
-    # use uv run (ou remova esta linha para usar o CMD do Dockerfile)
     command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      # encode do @ => %40
+      DB_URI: ${DB_URI}
+      UV_LINK_MODE: "copy"             # opcional: remove o warning de hardlink
     volumes:
-      - .:/app
+      - .:/app                         # código
+      - /app/.venv                   # REMOVIDO (gera 'Resource busy')
+      # se quiser persistir a venv, use assim:
+      # - venv_data:/app/.venv
     ports:
       - "8000:8000"
+    # Se você estiver no **Linux**, adicione esta linha (no Windows/Mac não precisa):
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+
+# somente se optar por persistir a venv:
+# volumes:
+#   venv_data:

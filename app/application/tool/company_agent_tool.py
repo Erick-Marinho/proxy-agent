@@ -38,7 +38,7 @@ async def get_company_info(query: str) -> str:
                     company_response = str(result)
                 
                 logger.info(f"Resposta recebida do agente da empresa")
-                return f"Informações da Empresa: {company_response}"
+                return company_response
             else:
                 logger.error(f"Erro HTTP {response.status_code}: {response.text}")
                 return f"Erro ao consultar dados da empresa. Status: {response.status_code}"
