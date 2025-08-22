@@ -1,4 +1,3 @@
-# docker-compose.yml
 services:
   app:
     build:
@@ -10,9 +9,5 @@ services:
     environment:
       DB_URI: ${DB_URI}
       UV_LINK_MODE: "copy"
-    # A secção 'volumes' foi completamente removida para garantir que
-    # o container é 100% baseado na imagem construída.
-    ports:
-      - "8000:8000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # [MODIFICADO] Faz o container partilhar a rede da VM diretamente.
+    network_mode: "host"
