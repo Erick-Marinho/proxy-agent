@@ -33,10 +33,13 @@ jobs:
 
             # 3. Cria o arquivo .env com as variáveis de ambiente do GitHub Secrets
             echo "DB_URI=${{ secrets.DB_URI }}" > .env
+
+            # 4. Para e remove os containers antigos para garantir uma atualização limpa
+            docker-compose down -v
             
-            # 4. Reconstrói e reinicia os containers com Docker Compose
+            # 5. Reconstrói e reinicia os containers com Docker Compose
             docker-compose up --build -d
 
-            # 5. (Opcional) Limpa imagens Docker antigas
+            # 6. (Opcional) Limpa imagens Docker antigas
             docker image prune -f
           EOF
