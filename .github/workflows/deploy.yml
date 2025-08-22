@@ -31,12 +31,18 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            # 3. Para e remove os containers antigos (sem sudo)
+            # 3. [NOVO] Remove o ficheiro .env antigo para garantir uma limpeza total
+            rm -f .env
+
+            # 4. Cria o novo arquivo .env com o valor do Secret do GitHub
+            echo "DB_URI=${{ secrets.DB_URI }}" > .env
+
+            # 5. Para e remove os containers antigos
             docker compose down
 
-            # 4. Reconstrói a imagem sem cache (sem sudo)
+            # 6. Reconstrói a imagem sem cache
             docker compose build --no-cache
 
-            # 5. Inicia os novos containers (sem sudo)
+            # 7. Inicia os novos containers
             docker compose up -d
           EOF
