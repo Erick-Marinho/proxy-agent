@@ -24,17 +24,14 @@ jobs:
       - name: Executar Script de Deploy na VM
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # 1. Navega para o diretório do projeto na VM
-            cd erick-marinho/proxy-agent
+            # 1. [CORRIGIDO] Navega para o diretório correto do projeto
+            cd proxy-agent
 
-            # 2. [MODIFICADO] Força a sincronização com o repositório remoto
-            # Isto descarta quaisquer alterações locais na VM e garante que o código
-            # é um espelho exato da branch 'main'.
+            # 2. Força a sincronização com o repositório remoto
             git fetch origin
             git reset --hard origin/main
 
-            # 3. [NOVO - DIAGNÓSTICO] Mostra o conteúdo do main.py no log
-            # para provar que o ficheiro foi atualizado.
+            # 3. Mostra o conteúdo do main.py para diagnóstico
             echo "----------- Verificando conteudo do main.py -----------"
             cat main.py
             echo "--------------------------------------------------------"
@@ -43,8 +40,11 @@ jobs:
             echo "DB_URI=${{ secrets.DB_URI }}" > .env
             
             # 5. Para e remove os containers antigos
-            docker compose down
+            sudo docker compose down
 
-            # 6. Reconstrói a imagem SEM CACHE e inicia os novos containers
-            docker compose up --build --no-cache -d
+            # 6. [CORRIGIDO] Reconstrói a imagem SEM CACHE
+            sudo docker compose build --no-cache
+
+            # 7. [CORRIGIDO] Inicia os novos containers a partir da imagem recém-criada
+            sudo docker compose up -d
           EOF
