@@ -43,8 +43,8 @@ jobs:
             echo "DB_URI=${{ secrets.DB_URI }}" > .env
             
             # 5. Para e remove os containers antigos
-            docker-compose down
+            docker compose down
 
             # 6. Reconstrói a imagem SEM CACHE e inicia os novos containers
-            docker-compose up --build --no-cache -d
+            docker compose up --build --no-cache -d
           EOF
