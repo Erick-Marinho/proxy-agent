@@ -25,21 +25,24 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             # 1. Navega para o diretório do projeto na VM
-            #    (Ajuste o caminho se for diferente)
             cd erick-marinho/proxy-agent
 
             # 2. Puxa as últimas alterações do repositório
             git pull origin main
 
-            # 3. Cria o arquivo .env com as variáveis de ambiente do GitHub Secrets
+            # 3. Cria o arquivo .env com as variáveis de ambiente
             echo "DB_URI=${{ secrets.DB_URI }}" > .env
-
-            # 4. Para e remove os containers antigos para garantir uma atualização limpa
-            docker-compose down -v
             
-            # 5. Reconstrói e reinicia os containers com Docker Compose
-            docker-compose up --build -d
+            # 4. Para e remove os containers antigos
+            docker-compose down
 
-            # 6. (Opcional) Limpa imagens Docker antigas
+            # 5. [NOVO] Remove a imagem antiga para garantir que uma nova seja criada.
+            # O '|| true' evita um erro caso a imagem não exista.
+            docker image rm proxy-agent_app || true
+
+            # 6. [MODIFICADO] Reconstrói a imagem SEM CACHE e inicia os novos containers
+            docker-compose up --build --no-cache -d
+
+            # 7. (Opcional) Limpa outras imagens não utilizadas
             docker image prune -f
           EOF
