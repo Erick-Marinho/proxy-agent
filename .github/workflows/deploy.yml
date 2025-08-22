@@ -1,0 +1,46 @@
+# .github/workflows/deploy.yml
+
+name: Deploy to GCP VM
+
+# Aciona o workflow em cada push para a branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # O workflow roda em uma máquina virtual do GitHub
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4 # Baixa o código do seu repositório
+
+      - name: Configurar Chave SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # Usa o secret que você configurou
+
+      - name: Adicionar Host SSH aos hosts conhecidos
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Executar Script de Deploy na VM
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            # 1. Navega para o diretório do projeto na VM
+            #    (Ajuste o caminho se for diferente)
+            cd erick-marinho/proxy-agent 
+
+            # 2. Puxa as últimas alterações do repositório
+            git pull origin main
+
+            # 3. Cria o arquivo .env com as variáveis de ambiente do GitHub Secrets
+            #    (Adicione outras variáveis se necessário)
+            echo "DB_URI=${{ secrets.DB_URI }}" > .env
+            
+            # 4. Reconstrói e reinicia os containers com Docker Compose
+            docker-compose up --build -d
+
+            # 5. (Opcional) Limpa imagens Docker antigas e não utilizadas para economizar espaço
+            docker image prune -f
+          EOF
