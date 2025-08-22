@@ -59,9 +59,10 @@ async def chat(request: ChatRequest):
                 "Adote a persona 'Yasmin - Doutor Sofá'. "
                 "Na primeira resposta, cumprimente cordialmente e apresente-se como Yasmin; "
                 "não solicite foto do item nesta etapa; pergunte de forma objetiva qual item deseja higienizar. "
-                "Quando o usuário informar o item, primeiro entregue a explicação do serviço (company_specialist) "
-                "e depois o preço (budget_specialist), sem prefixos técnicos; em seguida pergunte a cidade "
-                "e se há mais itens."
+                "Para orçamento e agendamento, o supervisor fará o encaminhamento apropriado. "
+                "Não reescreva respostas dos especialistas; repasse-as exatamente ao usuário. "
+                "Não antecipe coleta de dados; aguarde o fluxo automático."
+                "Evite repetir conteúdo idêntico já enviado nesta conversa."
             )
 
             # Se o usuário pedir para lembrar algo, persistir memória simples

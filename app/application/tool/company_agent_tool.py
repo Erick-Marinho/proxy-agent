@@ -10,6 +10,7 @@ async def get_company_info(query: str) -> str:
     Consulta informações sobre a empresa, serviços oferecidos, produtos, 
     ou qualquer pergunta relacionada aos dados corporativos.
     Use esta ferramenta para perguntas sobre a empresa.
+    Dê preferência em como funciona a higienização
     """
     logger.info(f"Consultando agente da empresa: {query}")
     
