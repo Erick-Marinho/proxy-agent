@@ -13,10 +13,23 @@ async def get_budget_info(query: str) -> str:
     logger.info(f"Consultando agente de orçamentos: {query}")
 
     enforced_query = (
-        "INSTRUÇÕES: Responda com orçamento EXATO, sem intervalos. "
-        "Se houver quantidade, informe preço unitário e TOTAL. "
-        "Preserve números e formato (R$ 0,00). Não use prefixos técnicos. "
-        "RETORNE apenas o conteúdo final ao cliente.\n\n"
+        "INSTRUÇÕES CRÍTICAS: Responda em pt-BR, claro e objetivo. "
+        "Estruture cada item com: item/serviço, quantidade, preço unitário, total. "
+        "Inclua ao final: 'Formas de pagamento: PIX ou em até 2x no crédito.' "
+        "NÃO inclua CTA. "
+        "SE A CONSULTA NÃO ESPECIFICAR exatamente o item/variação e quantidade, "
+        "NÃO infira variação nem quantidade. PROIBIDO gerar um orçamento genérico único "
+        "(ex.: 'Item/Serviço: Higienização de sofá (considerando 2 lugares)'). "
+        "Em vez disso, responda APENAS com uma lista de VARIAÇÕES TÍPICAS relevantes "
+        "para o produto/serviço citado, cada uma em uma linha independente, com "
+        "quantidade padrão 1, preço unitário e total. "
+        "Inicie OBRIGATORIAMENTE com a linha: 'Variações disponíveis:' e "
+        "NÃO inclua nenhum outro bloco de orçamento antes dessa lista. "
+        "NÃO use termos como 'considerando'. "
+        "SE A CONSULTA FOR ESPECÍFICA (item/variação definido e, se houver, quantidade), "
+        "entregue APENAS o orçamento dessa opção (use a quantidade informada; "
+        "se ausente, use 1). "
+        "\n\n"
         f"CONSULTA: {query}"
     )
 
