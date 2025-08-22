@@ -31,6 +31,8 @@ async def chat(request: ChatRequest):
 
         dsn = os.getenv("DB_URI")
 
+        logger.info(f"A tentar conectar com a DSN: {dsn}")
+
         async with (
             AsyncPostgresStore.from_conn_string(dsn) as store, 
             AsyncPostgresSaver.from_conn_string(dsn) as checkpointer
