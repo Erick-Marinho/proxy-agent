@@ -14,3 +14,5 @@ services:
     # o container é 100% baseado na imagem construída.
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
