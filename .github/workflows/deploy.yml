@@ -36,6 +36,7 @@ jobs:
 
             # 4. Cria o novo arquivo .env com o valor do Secret do GitHub
             echo "DB_URI=${{ secrets.DB_URI }}" > .env
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
 
             # 5. Para e remove os containers antigos
             docker compose down
